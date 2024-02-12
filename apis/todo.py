@@ -60,7 +60,7 @@ class TodoList(Resource):
         try:
             date.fromisoformat(due_date)
         except:
-            abort(400, "Wrong date format!")
+            abort(400, "Wrong date format!Accepted format YYYY-mm-dd")
         cur = cur = mysql.connection.cursor()
         cur.execute(
             "INSERT INTO todos (task,due_date) VALUES(%s,%s)",
@@ -112,12 +112,16 @@ class Todo(Resource):
         if not status:
             abort(400, "Status is required")
         cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM todos WHERE id = %s", (todo_id,))
+        todo = cur.fetchone()
+        if not todo:
+            abort(400, "Todo Not found!")
         cur.execute(
             "UPDATE todos SET status = %s WHERE id = %s",
             (status, todo_id),
         )
         if cur.rowcount == 0:
-            abort(400, "Todo Not found or you are setting the same status!")
+            abort(400, " You are setting the same status!")
         mysql.connection.commit()
         return {"message": "Todo updated"}, 200
 
@@ -164,7 +168,7 @@ class TodoDue(Resource):
         try:
             date.fromisoformat(due_date)
         except:
-            abort(400, "Wrong date format!")
+            abort(400, "Wrong date format!Accepted format YYYY-dd-mm")
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM todos WHERE due_date = %s", (due_date,))
         todos = cur.fetchall()
