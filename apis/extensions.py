@@ -20,7 +20,7 @@ def role_required(role):
             else:
                 user_role = get_jwt()["role"]
                 if role != user_role:
-                    abort(401, "You do not have access to this!")
+                    abort(401, "You do not have the authorization to do this!")
                 return f(*args, **kwargs)
 
         return inner_wrapper
