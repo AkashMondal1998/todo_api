@@ -8,7 +8,7 @@ app.config["MYSQL_USER"] = "akash"
 app.config["MYSQL_PASSWORD"] = "akash"
 app.config["MYSQL_DB"] = "Todo"
 app.config["MYSQL_CURSORCLASS"] = "DictCursor"
-app.config["JWT_SECRET_KEY"] = "userakash"
+app.config["JWT_SECRET_KEY"] = "416fc5da3ec05694b2d2ebf8ea6a604f"
 
 
 jwt.__init__(app)
