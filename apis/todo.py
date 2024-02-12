@@ -50,7 +50,7 @@ class TodoList(Resource):
 
     @api.doc(security="jsonWebToken")
     @api.expect(todo, validate=True)
-    @role_required("all")
+    @role_required("write")
     def post(self):
         """Create a new task"""
         task = api.payload["task"]
@@ -90,7 +90,7 @@ class Todo(Resource):
         return todo
 
     @api.doc(security="jsonWebToken")
-    @role_required("all")
+    @role_required("write")
     def delete(self, todo_id):
         """Delete a task given its identifier"""
         cur = mysql.connection.cursor()
@@ -105,7 +105,7 @@ class Todo(Resource):
 
     @api.doc(security="jsonWebToken")
     @api.expect(status, validate=True)
-    @role_required("all")
+    @role_required("write")
     def put(self, todo_id):
         """Update a task given its identifier"""
         status = api.payload["status"]
