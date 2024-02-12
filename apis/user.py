@@ -18,11 +18,13 @@ login = api.model(
 register = api.model(
     "Register",
     {
-        "username": fields.String(required=True, description="Username of the user"),
+        "username": fields.String(
+            required=True, max_length=20, description="Username of the user"
+        ),
         "password": fields.String(required=True, description="Password of the user"),
         "con_password": fields.String(required=True, description="Confirm Password"),
         "role": fields.String(
-            required=True, enum=["all", "read"], description="Role of the user"
+            required=True, enum=["write", "read"], description="Role of the user"
         ),
     },
 )
@@ -36,6 +38,11 @@ class Resgiter(Resource):
         username = api.payload["username"]
         if not username:
             abort(400, "Username is required!")
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cur.fetchone()
+        if user:
+            abort(400, "Username already exists")
         password = api.payload["password"]
         if not password:
             abort(400, "Password is required!")
@@ -46,7 +53,6 @@ class Resgiter(Resource):
         if password != con_password:
             abort(400, "Password and Confirm Password are not same!")
         pass_hash = flask_brcypt.generate_password_hash(password).decode("utf-8")
-        cur = mysql.connection.cursor()
         cur.execute(
             "INSERT INTO users(username,password,role) VALUES(%s,%s,%s)",
             (username, pass_hash, role),
