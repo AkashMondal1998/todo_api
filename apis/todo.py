@@ -3,7 +3,12 @@ from flask_restx import Resource, fields, Namespace, abort
 from datetime import date
 from .extensions import role_required, mysql
 
-api = Namespace("todos", description="TODO operations")
+
+authorizations = {
+    "jsonWebToken": {"type": "apiKey", "in": "header", "name": "Authorization"}
+}
+
+api = Namespace("todos", authorizations=authorizations, description="TODO operations")
 
 
 todo = api.model(
@@ -33,6 +38,7 @@ status = api.model(
 class TodoList(Resource):
     """Shows a list of all todos, and lets you POST to add new tasks"""
 
+    @api.doc(security="jsonWebToken")
     @api.marshal_list_with(todo)
     @role_required("read")
     def get(self):
@@ -42,6 +48,7 @@ class TodoList(Resource):
         todos = cur.fetchall()
         return list(todos)
 
+    @api.doc(security="jsonWebToken")
     @api.expect(todo, validate=True)
     @role_required("all")
     def post(self):
@@ -67,6 +74,7 @@ class TodoList(Resource):
 class Todo(Resource):
     """Show a single todo item and lets you delete them and udpate the status"""
 
+    @api.doc(security="jsonWebToken")
     @api.marshal_with(todo)
     @role_required("read")
     def get(self, todo_id):
@@ -81,6 +89,7 @@ class Todo(Resource):
             abort(404, "Todo not found")
         return todo
 
+    @api.doc(security="jsonWebToken")
     @role_required("all")
     def delete(self, todo_id):
         """Delete a task given its identifier"""
@@ -94,6 +103,7 @@ class Todo(Resource):
         mysql.connection.commit()
         return {"message": "Todo deleted"}, 200
 
+    @api.doc(security="jsonWebToken")
     @api.expect(status, validate=True)
     @role_required("all")
     def put(self, todo_id):
@@ -114,6 +124,7 @@ class Todo(Resource):
 
 @api.route("/finished")
 class TodoFinished(Resource):
+    @api.doc(security="jsonWebToken")
     @api.marshal_list_with(todo)
     @role_required("read")
     def get(self):
@@ -126,6 +137,7 @@ class TodoFinished(Resource):
 
 @api.route("/overdue")
 class TodoFinished(Resource):
+    @api.doc(security="jsonWebToken")
     @api.marshal_list_with(todo)
     @role_required("read")
     def get(self):
@@ -141,6 +153,7 @@ class TodoFinished(Resource):
 
 @api.route("/due")
 class TodoDue(Resource):
+    @api.doc(security="jsonWebToken", params={"due_date": "date"})
     @api.marshal_list_with(todo)
     @role_required("read")
     def get(self):
@@ -152,7 +165,7 @@ class TodoDue(Resource):
             date.fromisoformat(due_date)
         except:
             abort(400, "Wrong date format!")
-        cur = cur = mysql.connection.cursor()
+        cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM todos WHERE due_date = %s", (due_date,))
         todos = cur.fetchall()
         return list(todos)
